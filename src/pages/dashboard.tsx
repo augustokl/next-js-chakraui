@@ -5,7 +5,6 @@ import { Flex, SimpleGrid, Box, Text, theme } from '@chakra-ui/react'
 
 import { Header } from "../components/Header";
 import { Sidebar } from '../components/Sidebar';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
