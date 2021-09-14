@@ -1,19 +1,21 @@
 import dynamic from 'next/dynamic';
+import { ApexOptions } from 'apexcharts'
 
 import { Flex, SimpleGrid, Box, Text, theme } from '@chakra-ui/react'
 
 import { Header } from "../components/Header";
 import { Sidebar } from '../components/Sidebar';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 const Chart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
 })
 
 const pastWeek = Array.from(Array(7).keys())
-                  .map(days => new Date(Date.now() - 86400000 * days ).getDate())
-                  .sort((a, b) => a - b)
+                  .reverse()
+                  .map(days => new Date(Date.now() - 86400000 * days ).toISOString())
 
-const options = {
+const options: ApexOptions = {
   chart: {
     toolbar: {
       show: false
@@ -41,9 +43,17 @@ const options = {
       color: theme.colors.gray[600]
     },
     categories: pastWeek
-  }
+  },
+  fill: {
+    opacity: 0.3,
+    type: 'gradient',
+    gradient: {
+      shade: 'dark',
+      opacityFrom: 0.8,
+      opacityTo: 0.3
+    }
+  },
 };
-
 
 const series = [
   { name: 'series1', data: [31, 120, 10, 28, 101, 18, 34] }
@@ -62,6 +72,7 @@ export default function Dashboard() {
             p="8"
             bg="gray.800"
             borderRadius={8}
+            pb="4"
           >
             <Text fontSize="lg" mb="4">Week Subscribes</Text>
             <Chart options={options} type="area" series={series} height={160}/>
@@ -70,8 +81,10 @@ export default function Dashboard() {
             p="8"
             bg="gray.800"
             borderRadius={8}
+            pb="4"
           >
             <Text fontSize="lg" mb="4">Opening Rate</Text>
+            <Chart options={options} type="area" series={series} height={160}/>
           </Box>
         </SimpleGrid>
       </Flex>
