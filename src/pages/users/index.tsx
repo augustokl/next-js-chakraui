@@ -6,23 +6,47 @@ import {
   Flex,
   Heading,
   Icon,
+  Spinner,
   Table,
   Tbody,
   Td,
   Text,
   Thead,
   Tr,
-  Th, 
+  Th,
   useBreakpointValue} from "@chakra-ui/react";
+  import { useQuery } from 'react-query';
 
 import { RiAddLine, RiEditFill } from "react-icons/ri";
+
+import { api } from '../../services/api';
 
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
+import React from 'react';
+import { m } from 'framer-motion';
 
 
 export default function UserList() {
+  const { data, isLoading, error } = useQuery('users', async () => {
+    const response = await api.get('users')
+    const users = response.data.users.map(user => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: new Date(user.createdAt).toLocaleDateString('en-us', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        })
+      }
+    })
+
+    return users
+  })
+
   const isWideVersion = useBreakpointValue({
     base: false,
     lg: true,
@@ -50,49 +74,64 @@ export default function UserList() {
             </Link>
           </Flex>
 
-          <Table colorScheme="whiteAlpha">
-            <Thead>
-              <Tr>
-                <Th px={["4", "4", "6"]} color="gray.300" width="8">
-                  <Checkbox colorScheme="pink"/>
-                </Th>
-                <Th>User</Th>
-                {isWideVersion && <Th>Register date</Th>}
-                <Th width="6"></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              <Tr>
-                <Td px={["4", "4", "6"]}>
-                  <Checkbox colorScheme="pink"/>
-                </Td>
-                <Td>
-                  <Box>
-                    <Text fontWeight="bold">Augusto</Text>
-                    <Text fontSize="sm" color="gray.300">augusto@test.com</Text>
-                  </Box>
-                </Td>
-                {isWideVersion && (
-                  <Td>
-                      4th April 2021
-                  </Td>
-                )}
-                <Td>
-                  <Button
-                    as="a"
-                    size="sm"
-                    fontSize="sm"
-                    colorScheme="purple"
-                    leftIcon={<Icon as={RiEditFill} fontSize="16" />}
-                  >
-                    Edit
-                  </Button>
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
+          { isLoading ? (
+            <Flex justify="center">
+              <Spinner />
+            </Flex>
+          ) : error ? (
+             <Flex justify="center">
+               <Text>Something went wrong</Text>
+             </Flex>
+          ) : (
+            <>
+              <Table colorScheme="whiteAlpha">
+                <Thead>
+                  <Tr>
+                    <Th px={["4", "4", "6"]} color="gray.300" width="8">
+                      <Checkbox colorScheme="pink"/>
+                    </Th>
+                    <Th>User</Th>
+                    {isWideVersion && <Th>Register date</Th>}
+                    <Th width="6"></Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {data.map(user => (
+                    <Tr key={user.id}>
+                      <Td px={["4", "4", "6"]}>
+                        <Checkbox colorScheme="pink"/>
+                      </Td>
+                      <Td>
+                        <Box>
+                          <Text fontWeight="bold">{user.name}</Text>
+                          <Text fontSize="sm" color="gray.300">{user.email}</Text>
+                        </Box>
+                      </Td>
+                      {isWideVersion && (
+                        <Td>
+                            {user.createdAt}
+                        </Td>
+                      )}
+                      <Td>
+                        <Button
+                          as="a"
+                          size="sm"
+                          fontSize="sm"
+                          colorScheme="purple"
+                          leftIcon={<Icon as={RiEditFill} fontSize="16" />}
+                        >
+                          Edit
+                        </Button>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
 
-          <Pagination />
+              <Pagination />
+            </>
+          )}
+ 
         </Box>
       </Flex>
     </Box>
