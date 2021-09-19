@@ -7,6 +7,7 @@ import {
   Flex,
   Heading,
   Icon,
+  Link as ChakraLink,
   Spinner,
   Table,
   Tbody,
@@ -19,12 +20,14 @@ import {
 } from "@chakra-ui/react";
 
 import { useUsers } from "../../services/hooks/useUsers";
+import { queryClient } from "../../services/queryClient";
 
 import { RiAddLine, RiEditFill } from "react-icons/ri";
 
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
+import { api } from "../../services/api";
 
 
 export default function UserList() {
@@ -35,6 +38,16 @@ export default function UserList() {
     base: false,
     lg: true,
   });
+
+  async function handlePrefetchUser(userId: number) {
+    await queryClient.prefetchQuery(['user', userId], async () => {
+      const reponse = await api.get(`users/${userId}`)
+
+      return reponse.data
+    }, {
+      staleTime: 1000 * 60 * 10,
+    });
+  }
 
   return (
     <Box>
@@ -92,7 +105,9 @@ export default function UserList() {
                       </Td>
                       <Td>
                         <Box>
-                          <Text fontWeight="bold">{user.name}</Text>
+                          <ChakraLink color="purple.400" onMouseEnter={() => handlePrefetchUser(Number(user.id))}>
+                            <Text fontWeight="bold">{user.name}</Text>
+                          </ChakraLink>
                           <Text fontSize="sm" color="gray.300">
                             {user.email}
                           </Text>
